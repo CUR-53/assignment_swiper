@@ -10,116 +10,97 @@ import 'swiper/css/pagination';
 import 'swiper/css/navigation';
 // Swiper end
 
-const OurSwiper = ({images}) => {
+const OurSwiper = ({ images, author = 'Lene Riis' }) => {
+  const swiperRef = useRef(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-    const swiperRef = useRef(null);
-    const [currentIndex, setCurrentIndex] = useState(0);
-    
+  useEffect(() => {
+    fetch('http://localhost:3000/api/images?author=Lene%20Riis')
+      .then((res) => res.json())
+      .then((data) => console.log(data));
+  });
 
-    useEffect(() => {
+  useEffect(() => {
+    register();
+  }, []);
 
-        register();
+  // Listen for event
+  useEffect(() => {
+    swiperRef.current.addEventListener('swiperslidechange', (e) => {
+      const [swiper] = e.detail;
+      setCurrentIndex(swiper.activeIndex);
+    });
+  }, []);
 
-    }, [])
+  const nextSlide = () => {
+    swiperRef.current.swiper.slideNext();
+  };
 
-    // Listen for event
-    useEffect(() => {
+  const prevSlide = () => {
+    swiperRef.current.swiper.slidePrev();
 
-        swiperRef.current.addEventListener('swiperslidechange', (e) => {
-            const [swiper] = e.detail;
-            setCurrentIndex(swiper.activeIndex)
-        });
+    // Alternative speed
+    // swiperRef.current.swiper.slidePrev(4000);
+  };
 
-    }, [])
+  const slideTo = (index) => {
+    setCurrentIndex(index);
+    swiperRef.current.swiper.slideTo(index);
 
-    const nextSlide = () => {
+    // Alternative speed
+    // swiperRef.current.swiper.slideTo(index, 1000);
+  };
 
-        swiperRef.current.swiper.slideNext();
+  return (
+    <div className={styles.ourContainer}>
+      <div className={styles.ourSwiper}>
+        <swiper-container
+          ref={swiperRef}
+          // effect={'fade'}
+          space-between={100}
+          slides-per-view={1}
+          keyboard
+          speed={3000}
+          autoplay
+          // pagination
+          // navigation
+          // loop
+          // reverse-direction
+        >
+          {
+            // For hvert image i images arrayet, returner en swiper-slide
+            images.map((image) => {
+              return (
+                <swiper-slide key={image._id}>
+                  {/* Vores slide */}
+                  <div className={styles.ourSlide}>
+                    <div className={styles.ourHeader}>
+                      <h1>{image.author}</h1>
+                      <p>{image.gallery}</p>
+                    </div>
+                    <Image src={image.path} alt={image.name} width={image.width} height={image.height}></Image>
+                  </div>
+                </swiper-slide>
+              );
+            })
+          }
+        </swiper-container>
+      </div>
 
-    }
-
-    const prevSlide = () => {
-
-        swiperRef.current.swiper.slidePrev();
-
-        // Alternative speed
-        // swiperRef.current.swiper.slidePrev(4000);
-    }
-
-    const slideTo = (index) => {
-        setCurrentIndex(index)
-        swiperRef.current.swiper.slideTo(index);
-
-        // Alternative speed
-        // swiperRef.current.swiper.slideTo(index, 1000);
-    }
-
-    return (
-        <div className={styles.ourContainer}>
-            <div className={styles.ourSwiper}>
-
-                <swiper-container
-
-                ref={swiperRef} 
-                // effect={'fade'}
-                space-between={100}
-                slides-per-view={1}
-                keyboard
-                speed={3000}
-                autoplay
-                // pagination
-                // navigation
-                // loop
-                // reverse-direction
-
-                >
-
-
-                {
-                // For hvert image i images arrayet, returner en swiper-slide
-                images.map( (image) => {
-
-                    return <swiper-slide key={image._id}>
-                        
-                        {/* Vores slide */}
-                        <div className={styles.ourSlide}>
-                            <div className={styles.ourHeader}>
-                            <h1>{image.author}</h1>
-                            <p>{image.gallery}</p>
-                            </div>
-                            <Image src={image.path} alt={image.name} width={image.width} height={image.height}></Image>
-                        </div>
-
-                    </swiper-slide>
-            
-
-                })}
-
-
-                </swiper-container>
-
-
-            </div>
-
-            <div className={styles.ourControls}>
-
-                <div onClick={prevSlide} className={styles.ourCtrlBtn}>
-                        PREV
-                </div> 
-                <div className={styles.ourCtrlPaging}>
-                {images.map( (image, index) => {
-
-                    return <span className={`${styles.ourDot} ${index === currentIndex ? styles.active : null}`} key={image._id} onClick={() => slideTo(index)}></span>
-
-                })}
-                </div>
-                <div onClick={nextSlide} className={styles.ourCtrlBtn}>
-                        NEXT
-                </div> 
-
-            </div>
+      <div className={styles.ourControls}>
+        <div onClick={prevSlide} className={styles.ourCtrlBtn}>
+          PREV
         </div>
-    )
-
+        <div className={styles.ourCtrlPaging}>
+          {images.map((image, index) => {
+            return <span className={`${styles.ourDot} ${index === currentIndex ? styles.active : null}`} key={image._id} onClick={() => slideTo(index)}></span>;
+          })}
+        </div>
+        <div onClick={nextSlide} className={styles.ourCtrlBtn}>
+          NEXT
+        </div>
+      </div>
+    </div>
+  );
 };
-export default OurSwiper
+export default OurSwiper;
